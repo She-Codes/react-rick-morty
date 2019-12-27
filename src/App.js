@@ -1,26 +1,161 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect, useReducer } from 'react';
+import ReactDOM from "react-dom";
+import axios from "axios";
+
 import './App.css';
 
-function App() {
+// https://rickandmortyapi.com
+// https://rickandmortyapi.com/api/character/
+
+const dataFetchReducer = (state, action) => {
+  switch (action.type) {
+    case "FETCH_INIT":
+      return {
+        ...state,
+        loading: true,
+        isError: false
+      };
+    case "FETCH_SUCCESS":
+      return {
+        ...state,
+        loading: false,
+        isError: false,
+        characters: action.payload.results,
+        totalPages: action.payload.info.pages,
+        nextPageUrl: action.payload.info.next,
+        prevPageUrl: action.payload.info.prev
+      };
+    case "FETCH_FAILURE":
+      return {
+        ...state,
+        loading: false,
+        isError: true
+      };
+    default:
+      throw new Error();
+  }
+};
+
+const useRickAndMortyApi = path => {
+  const [url, setUrl] = useState(path);
+  const [state, dispatch] = useReducer(dataFetchReducer, {
+    loading: false,
+    isError: false,
+    characters: []
+  });
+
+  useEffect(() => {
+    const getCharacterData = async () => {
+      dispatch({ type: "FETCH_INIT" });
+      try {
+        const response = await axios.get(`${url}`);
+        dispatch({
+          type: "FETCH_SUCCESS",
+          payload: response.data
+        });
+      } catch (error) {
+        dispatch({ type: "FETCH_FAILURE" });
+      }
+    };
+
+    getCharacterData();
+  }, [url]);
+
+  return { state, setUrl };
+};
+
+const Header = props => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <header>
+      <form onSubmit={props.submitHandler}>
+        <input type="text" value={props.query} onChange={props.changeHandler} />
+        <button type="submit">Search</button>
+      </form>
+    </header>
+  );
+};
+
+const Pager = props => {
+  // ex url: "https://rickandmortyapi.com/api/character/?page=2"
+  const getPageNum = url => {
+    const numberString = url.split("page=")[1];
+    return parseInt(numberString, 10);
+  };
+
+  const getCurrentPageNum = () => {
+    return props.nextPageUrl
+      ? getPageNum(props.nextPageUrl) - 1
+      : getPageNum(props.prevPageUrl) + 1;
+  };
+
+  return (
+    <div>
+      {props.prevPageUrl && (
+        <button type="button" onClick={props.prevPageHandler}>
+          Prev
+        </button>
+      )}
+      <span>{getCurrentPageNum()}</span>
+      {props.nextPageUrl && (
+        <button type="button" onClick={props.nextPageHandler}>
+          Next
+        </button>
+      )}
     </div>
   );
-}
+};
+
+const App = () => {
+  const path = "https://rickandmortyapi.com/api/character/";
+  const [query, setQuery] = useState("");
+  const { state, setUrl } = useRickAndMortyApi(path);
+
+  const submitHandler = event => {
+    event.preventDefault();
+    setUrl(`${path}?name=${query}`);
+  };
+
+  const prevPageHandler = () => {
+    setUrl(state.prevPageUrl);
+  };
+
+  const nextPageHandler = () => {
+    setUrl(state.nextPageUrl);
+  };
+
+  const changeHandler = event => {
+    setQuery(event.target.value);
+  };
+
+  return (
+    <>
+      <Header
+        query={query}
+        changeHandler={changeHandler}
+        submitHandler={submitHandler}
+      />
+      {state.isError && <div>Something went wrong.</div>}
+      {state.loading ? (
+        <div>loading...</div>
+      ) : (
+          <div>
+            <ul>
+              {state.characters.map(character => (
+                <li key={character.id}>{character.name}</li>
+              ))}
+            </ul>
+            {state.totalPages > 1 && (
+              <Pager
+                prevPageUrl={state.prevPageUrl}
+                nextPageUrl={state.nextPageUrl}
+                prevPageHandler={prevPageHandler}
+                nextPageHandler={nextPageHandler}
+              />
+            )}
+          </div>
+        )}
+    </>
+  );
+};
 
 export default App;

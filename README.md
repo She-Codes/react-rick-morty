@@ -1,5 +1,7 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+Experimenting with data fetching, custom hooks, `useState` and `useReducer` hooks.
+
 ## Available Scripts
 
 In the project directory, you can run:
