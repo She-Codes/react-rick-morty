@@ -4,8 +4,9 @@ import axios from "axios";
 
 import './App.css';
 
-// https://rickandmortyapi.com
-// https://rickandmortyapi.com/api/character/
+const PATH_BASE = 'https://rickandmortyapi.com/api';
+const PATH_RESOURCE = '/character/';
+const CHARACTER_PATH = `${PATH_BASE}${PATH_RESOURCE}`;
 
 const dataFetchReducer = (state, action) => {
   switch (action.type) {
@@ -36,8 +37,8 @@ const dataFetchReducer = (state, action) => {
   }
 };
 
-const useRickAndMortyApi = path => {
-  const [url, setUrl] = useState(path);
+const useRickAndMortyApi = () => {
+  const [url, setUrl] = useState(CHARACTER_PATH);
   const [state, dispatch] = useReducer(dataFetchReducer, {
     loading: false,
     isError: false,
@@ -106,13 +107,12 @@ const Pager = props => {
 };
 
 const App = () => {
-  const path = "https://rickandmortyapi.com/api/character/";
   const [query, setQuery] = useState("");
-  const { state, setUrl } = useRickAndMortyApi(path);
+  const { state, setUrl } = useRickAndMortyApi(CHARACTER_PATH);
 
   const submitHandler = event => {
     event.preventDefault();
-    setUrl(`${path}?name=${query}`);
+    setUrl(`${CHARACTER_PATH}?name=${query}`);
   };
 
   const prevPageHandler = () => {
