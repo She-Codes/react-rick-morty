@@ -1,12 +1,8 @@
 import React, { useState, useEffect, useReducer } from 'react';
-import ReactDOM from "react-dom";
 import axios from "axios";
-
-import './App.css';
-
-const PATH_BASE = 'https://rickandmortyapi.com/api';
-const PATH_RESOURCE = '/character/';
-const CHARACTER_PATH = `${PATH_BASE}${PATH_RESOURCE}`;
+import Header from './Header';
+import Pager from './Pager';
+import { CHARACTER_PATH } from '../constants';
 
 const dataFetchReducer = (state, action) => {
   switch (action.type) {
@@ -37,6 +33,7 @@ const dataFetchReducer = (state, action) => {
   }
 };
 
+// Custom Hook
 const useRickAndMortyApi = () => {
   const [url, setUrl] = useState(CHARACTER_PATH);
   const [state, dispatch] = useReducer(dataFetchReducer, {
@@ -63,47 +60,6 @@ const useRickAndMortyApi = () => {
   }, [url]);
 
   return { state, setUrl };
-};
-
-const Header = props => {
-  return (
-    <header>
-      <form onSubmit={props.submitHandler}>
-        <input type="text" value={props.query} onChange={props.changeHandler} />
-        <button type="submit">Search</button>
-      </form>
-    </header>
-  );
-};
-
-const Pager = props => {
-  // ex url: "https://rickandmortyapi.com/api/character/?page=2"
-  const getPageNum = url => {
-    const numberString = url.split("page=")[1];
-    return parseInt(numberString, 10);
-  };
-
-  const getCurrentPageNum = () => {
-    return props.nextPageUrl
-      ? getPageNum(props.nextPageUrl) - 1
-      : getPageNum(props.prevPageUrl) + 1;
-  };
-
-  return (
-    <div>
-      {props.prevPageUrl && (
-        <button type="button" onClick={props.prevPageHandler}>
-          Prev
-        </button>
-      )}
-      <span>{getCurrentPageNum()}</span>
-      {props.nextPageUrl && (
-        <button type="button" onClick={props.nextPageHandler}>
-          Next
-        </button>
-      )}
-    </div>
-  );
 };
 
 const App = () => {
