@@ -4,6 +4,15 @@ import Header from './Header';
 import Pager from './Pager';
 import { CHARACTER_PATH } from '../constants';
 
+const setCharacters = (nextPageUrl, oldCharacters, newCharacters) => {
+  // if this is page 1  
+  if (!nextPageUrl || nextPageUrl.includes('page=2')) {
+    return newCharacters;
+  }
+
+  return [...oldCharacters, ...newCharacters];
+}
+
 const dataFetchReducer = (state, action) => {
   switch (action.type) {
     case "FETCH_INIT":
@@ -17,7 +26,7 @@ const dataFetchReducer = (state, action) => {
         ...state,
         loading: false,
         isError: false,
-        characters: action.payload.results,
+        characters: setCharacters(action.payload.info.next, state.characters, action.payload.results),
         totalPages: action.payload.info.pages,
         nextPageUrl: action.payload.info.next,
         prevPageUrl: action.payload.info.prev
@@ -71,11 +80,7 @@ const App = () => {
     setUrl(`${CHARACTER_PATH}?name=${query}`);
   };
 
-  const prevPageHandler = () => {
-    setUrl(state.prevPageUrl);
-  };
-
-  const nextPageHandler = () => {
+  const showMoreHandler = () => {
     setUrl(state.nextPageUrl);
   };
 
@@ -102,10 +107,8 @@ const App = () => {
             </ul>
             {state.totalPages > 1 && (
               <Pager
-                prevPageUrl={state.prevPageUrl}
+                showMoreHandler={showMoreHandler}
                 nextPageUrl={state.nextPageUrl}
-                prevPageHandler={prevPageHandler}
-                nextPageHandler={nextPageHandler}
               />
             )}
           </div>

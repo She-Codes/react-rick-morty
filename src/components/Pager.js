@@ -14,18 +14,11 @@ const Pager = props => {
   };
 
   return (
+    props.nextPageUrl &&
     <div>
-      {props.prevPageUrl && (
-        <button type="button" onClick={props.prevPageHandler}>
-          Prev
-        </button>
-      )}
-      <span>{getCurrentPageNum()}</span>
-      {props.nextPageUrl && (
-        <button type="button" onClick={props.nextPageHandler}>
-          Next
-        </button>
-      )}
+      <button type="button" onClick={props.showMoreHandler}>
+        More
+      </button>
     </div>
   );
 };
